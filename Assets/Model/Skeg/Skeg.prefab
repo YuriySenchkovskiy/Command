@@ -639,7 +639,7 @@ GameObject:
   - component: {fileID: 896643537356868711}
   - component: {fileID: 9084070487283106000}
   m_Layer: 0
-  m_Name: Skeg
+  m_Name: Skeg@Walking
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
@@ -17,7 +19,7 @@ public class PlayerController : MonoBehaviour
     {
         float translation = Input.GetAxis("Vertical") * speed;
         float rotation = Input.GetAxis("Horizontal") * rotationSpeed;
-        
+
         translation *= Time.deltaTime;
         rotation *= Time.deltaTime;
 

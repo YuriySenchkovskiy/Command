@@ -3,112 +3,107 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Script
+public class InputHandler : MonoBehaviour
 {
-    public class InputHandler: MonoBehaviour
+    [SerializeField] private GameObject actor;
+    [SerializeField] private KeyCode goForward;
+    
+    Animator anim;
+    Command keyQ, keyW, keyE, upArrow;
+    List<Command> oldCommands = new List<Command>();
+
+    Coroutine replayCoroutine;
+    bool shouldStartReplay;
+    bool isReplaying;
+
+    // Start is called before the first frame update
+    void Start()
     {
-        [SerializeField] private GameObject actor;
-        private Animator anim;
-        private Command keyQ, keyW, keyE, keyR, keyT, upArrow;
-        private List<Command> oldCommands = new List<Command>();
+        keyQ = new PerformJump();
+        keyW = new PerformKick();
+        keyE = new PerformPunch();
+        upArrow = new MoveForward();
+        anim = actor.GetComponent<Animator>();
+        Camera.main.GetComponent<CameraFollow360>().player = actor.transform;
+    }
 
-        private Coroutine replayCoroutine;
-        private bool shouldStartReplay;
-        private bool isReplaying;
-        
-        private void Start()
+    // Update is called once per frame
+    void Update()
+    {
+        if (!isReplaying)
+            HandleInput();
+        StartReplay();
+    }
+
+    void HandleInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Q))
         {
-            keyQ = new PerformJump();
-            keyW = new DoNothing();
-            keyE = new DoNothing();
-            keyR = new PerformKick();
-            keyT = new PerformPanch();
-            upArrow = new MoveForward();
-            anim = actor.GetComponent<Animator>();
-            Camera.main.GetComponent<CameraFollow360>().player = actor.transform;
+            keyQ.Execute(anim, true);
+            oldCommands.Add(keyQ);
+        }
+        else if (Input.GetKeyDown(KeyCode.W))
+        {
+            keyW.Execute(anim, true);
+            oldCommands.Add(keyW);
+        }
+        else if (Input.GetKeyDown(KeyCode.E))
+        {
+            keyE.Execute(anim, true);
+            oldCommands.Add(keyE);
+        }
+        else if (Input.GetKeyDown(goForward))
+        {
+            upArrow.Execute(anim, true);
+            oldCommands.Add(upArrow);
         }
 
-        private void Update()
+        if (Input.GetKeyDown(KeyCode.Space))
+            shouldStartReplay = true;
+
+        if (Input.GetKeyDown(KeyCode.Z))
+            UndoLastCommand();
+
+    }
+
+    void UndoLastCommand()
+    {
+        if (oldCommands.Count > 0)
         {
-            if(!isReplaying) HandleInput();
-            StartReplay();
+            Command c = oldCommands[oldCommands.Count - 1];
+            c.Execute(anim, false);
+            oldCommands.RemoveAt(oldCommands.Count - 1);
+        }
+    }
+
+    void StartReplay()
+    {
+        if(shouldStartReplay && oldCommands.Count > 0)
+        {
+            shouldStartReplay = false;
+            if(replayCoroutine != null)
+            {
+                StopCoroutine(replayCoroutine);
+            }
+            replayCoroutine = StartCoroutine(ReplayCommands());
+        }
+    }
+
+    IEnumerator ReplayCommands()
+    {
+        isReplaying = true;
+
+        for(int i = 0; i < oldCommands.Count; i++)
+        {
+            oldCommands[i].Execute(anim, true);
+            yield return new WaitForSeconds(1f);
         }
 
-        private void StartReplay()
-        {
-            if (shouldStartReplay && oldCommands.Count > 0)
-            {
-                shouldStartReplay = false;
-                if (replayCoroutine != null)
-                {
-                    StopCoroutine(replayCoroutine);
-                }
+        isReplaying = false;
+    }
 
-                replayCoroutine = StartCoroutine(ReplayComands());
-            }
-        }
-
-        private IEnumerator ReplayComands()
-        {
-            isReplaying = true;
-
-            for (int i = 0; i < oldCommands.Count; i++)
-            {
-                oldCommands[i].Execute(anim);
-                yield return new WaitForSeconds(1f);
-            }
-
-            isReplaying = false;
-        }
-
-        private void HandleInput()
-        {
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                keyQ.Execute(anim);
-                oldCommands.Add(keyQ);
-            }
-            else if (Input.GetKeyDown(KeyCode.W))
-            {
-                keyW.Execute(anim);
-                oldCommands.Add(keyW);
-            }
-            else if (Input.GetKeyDown(KeyCode.E))
-            {
-                keyE.Execute(anim);
-                oldCommands.Add(keyE);
-            }
-            else if (Input.GetKeyDown(KeyCode.R))
-            {
-                keyR.Execute(anim);
-                oldCommands.Add(keyR);
-            }
-            else if (Input.GetKeyDown(KeyCode.T))
-            {
-                keyT.Execute(anim);
-                oldCommands.Add(keyT);
-            }
-            else if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                upArrow.Execute(anim);
-                oldCommands.Add(upArrow);
-            }
-
-            if (Input.GetKeyDown(KeyCode.Space))
-                shouldStartReplay = true;
-            
-            if (Input.GetKeyDown(KeyCode.Z))
-                UndoLastCommnad();
-        }
-
-        void UndoLastCommnad()
-        {
-            if (oldCommands.Count > 0)
-            {
-                Command c = oldCommands[oldCommands.Count - 1];
-                c.Execute(anim);
-                oldCommands.RemoveAt(oldCommands.Count - 1);
-            }
-        }
+    public void ChangeGoForwardButton(int value)
+    {
+        goForward = (KeyCode)Enum.GetValues(typeof(KeyCode)).GetValue(value);;
     }
 }

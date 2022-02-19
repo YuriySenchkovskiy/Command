@@ -1,50 +1,60 @@
-using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace Script
+public abstract class Command
 {
-    public abstract class Command
-    {
-        public abstract void Execute(Animator anim);
-    }
+    public abstract void Execute(Animator anim, bool forward);
+}
 
-    public class PerformJump : Command
+public class MoveForward : Command
+{
+    public override void Execute(Animator anim, bool forward)
     {
-        public override void Execute(Animator anim)
-        {
-            anim.SetTrigger("isJumping");
-        }
-    }
-    
-    public class PerformKick : Command
-    {
-        public override void Execute(Animator anim)
-        {
-            anim.SetTrigger("isKicking");
-        }
-    }
-    
-    public class PerformPanch : Command
-    {
-        public override void Execute(Animator anim)
-        {
-            anim.SetTrigger("isPunching");
-        }
-    }
-    
-    public class DoNothing : Command
-    {
-        public override void Execute(Animator anim)
-        {
-            
-        }
-    }
-    
-    public class MoveForward : Command
-    {
-        public override void Execute(Animator anim)
-        {
+        if(forward)
             anim.SetTrigger("isWalking");
-        }
+        else
+            anim.SetTrigger("isWalkingR");
+    }
+}
+
+public class PerformJump: Command 
+{
+    public override void Execute(Animator anim, bool forward)
+    {
+        if (forward)
+            anim.SetTrigger("isJumping");
+        else
+            anim.SetTrigger("isJumpingR");
+    }
+}
+
+public class PerformKick : Command
+{
+    public override void Execute(Animator anim, bool forward)
+    {
+        if (forward)
+            anim.SetTrigger("isKicking");
+        else
+            anim.SetTrigger("isKickingR");
+    }
+}
+
+public class PerformPunch : Command
+{
+    public override void Execute(Animator anim, bool forward)
+    {
+        if (forward)
+            anim.SetTrigger("isPunching");
+        else
+            anim.SetTrigger("isPunchingR");
+    }
+}
+
+public class DoNothing: Command 
+{
+    public override void Execute(Animator anim, bool forward)
+    {
+      
     }
 }
